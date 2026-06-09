@@ -118,6 +118,41 @@
       letter-spacing: 1px;
       margin-bottom: 12px;
     }
+
+    /* גריד של checkbox-ים לבחירת ז'אנרים */
+    .genre-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 10px;
+      background: #fafafa;
+    }
+
+    .genre-grid label {
+      font-weight: normal;
+      font-size: 13px;
+      color: #333;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+    }
+
+    .genre-grid input[type="checkbox"] {
+      width: auto;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    .genre-hint {
+      font-size: 12px;
+      color: #999;
+      margin-top: 4px;
+    }
   </style>
 </head>
 <body>
@@ -137,9 +172,38 @@
       </div>
 
       <div class="form-group">
-        <label for="genres">ז'אנרים (מופרדים בפסיק)</label>
-        <input type="text" id="genres" name="genres"
-               placeholder="לדוגמה: Action,Drama" required>
+        <label>ז'אנרים <span class="optional">(בחר לפחות אחד)</span></label>
+        <div class="genre-grid" id="genreGrid">
+          <!-- ז'אנרים מתוך הדאטאסט (ללא ערכי NULL) -->
+          <label><input type="checkbox" value="Action"> Action</label>
+          <label><input type="checkbox" value="Adult"> Adult</label>
+          <label><input type="checkbox" value="Adventure"> Adventure</label>
+          <label><input type="checkbox" value="Animation"> Animation</label>
+          <label><input type="checkbox" value="Biography"> Biography</label>
+          <label><input type="checkbox" value="Comedy"> Comedy</label>
+          <label><input type="checkbox" value="Crime"> Crime</label>
+          <label><input type="checkbox" value="Documentary"> Documentary</label>
+          <label><input type="checkbox" value="Drama"> Drama</label>
+          <label><input type="checkbox" value="Family"> Family</label>
+          <label><input type="checkbox" value="Fantasy"> Fantasy</label>
+          <label><input type="checkbox" value="Film-Noir"> Film-Noir</label>
+          <label><input type="checkbox" value="Game-Show"> Game-Show</label>
+          <label><input type="checkbox" value="History"> History</label>
+          <label><input type="checkbox" value="Horror"> Horror</label>
+          <label><input type="checkbox" value="Music"> Music</label>
+          <label><input type="checkbox" value="Musical"> Musical</label>
+          <label><input type="checkbox" value="Mystery"> Mystery</label>
+          <label><input type="checkbox" value="News"> News</label>
+          <label><input type="checkbox" value="Reality-TV"> Reality-TV</label>
+          <label><input type="checkbox" value="Romance"> Romance</label>
+          <label><input type="checkbox" value="Sci-Fi"> Sci-Fi</label>
+          <label><input type="checkbox" value="Sport"> Sport</label>
+          <label><input type="checkbox" value="Talk-Show"> Talk-Show</label>
+          <label><input type="checkbox" value="Thriller"> Thriller</label>
+          <label><input type="checkbox" value="War"> War</label>
+          <label><input type="checkbox" value="Western"> Western</label>
+        </div>
+        <p class="genre-hint">הז'אנר הראשון שתבחר יהיה הז'אנר הראשי</p>
       </div>
 
       <div class="form-group">
@@ -199,10 +263,21 @@
       resultDiv.className = "";
       resultDiv.textContent = "⏳ מחשב...";
 
+      // איסוף ז'אנרים מסומנים — מחברים לstring מופרד בפסיקים
+      const checkedGenres = Array.from(
+        document.querySelectorAll("#genreGrid input[type='checkbox']:checked")
+      ).map(cb => cb.value);
+
+      if (checkedGenres.length === 0) {
+        resultDiv.className = "result-error";
+        resultDiv.textContent = "❌ יש לבחור לפחות ז'אנר אחד";
+        return;
+      }
+
       // איסוף נתונים מהטופס
       const data = {
         primaryTitle:    document.getElementById("primaryTitle").value.trim(),
-        genres:          document.getElementById("genres").value.trim(),
+        genres:          checkedGenres.join(","),
         startYear:       document.getElementById("startYear").value,
         runtimeMinutes:  document.getElementById("runtimeMinutes").value,
         Language:        document.getElementById("Language").value.trim(),
