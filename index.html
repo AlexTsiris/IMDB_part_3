@@ -119,15 +119,31 @@
       margin-bottom: 12px;
     }
 
+    /* חיפוש ז'אנרים */
+    .genre-search {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px 6px 0 0;
+      border-bottom: none;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    .genre-search:focus {
+      outline: none;
+      border-color: #4a90d9;
+    }
+
     /* גריד של checkbox-ים לבחירת ז'אנרים */
     .genre-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 6px;
-      max-height: 200px;
+      max-height: 180px;
       overflow-y: auto;
       border: 1px solid #ccc;
-      border-radius: 6px;
+      border-radius: 0 0 6px 6px;
       padding: 10px;
       background: #fafafa;
     }
@@ -147,6 +163,67 @@
       margin: 0;
       cursor: pointer;
     }
+
+    /* הודעה כשאין תוצאות + שדה ז'אנר חופשי */
+    .genre-no-match {
+      display: none;
+      font-size: 13px;
+      color: #888;
+      padding: 8px 10px;
+      border: 1px solid #ccc;
+      border-top: none;
+      border-radius: 0 0 6px 6px;
+      background: #fafafa;
+    }
+
+    .genre-custom {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .genre-custom input[type="text"] {
+      flex: 1;
+      padding: 6px 8px;
+      font-size: 13px;
+    }
+
+    .genre-custom button {
+      width: auto;
+      padding: 6px 12px;
+      font-size: 13px;
+      margin-top: 0;
+      background: #6c757d;
+    }
+
+    /* תגיות ז'אנרים שנבחרו */
+    .genre-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+      min-height: 28px;
+    }
+
+    .genre-tag {
+      background: #4a90d9;
+      color: white;
+      border-radius: 12px;
+      padding: 3px 10px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .genre-tag .remove {
+      cursor: pointer;
+      font-weight: bold;
+      opacity: 0.8;
+    }
+
+    .genre-tag .remove:hover { opacity: 1; }
 
     .genre-hint {
       font-size: 12px;
@@ -173,8 +250,13 @@
 
       <div class="form-group">
         <label>ז'אנרים <span class="optional">(בחר לפחות אחד)</span></label>
+
+        <!-- שדה חיפוש -->
+        <input type="text" class="genre-search" id="genreSearch"
+               placeholder="🔍 חפש ז'אנר...">
+
+        <!-- רשימת checkboxes עם גלילה -->
         <div class="genre-grid" id="genreGrid">
-          <!-- ז'אנרים מתוך הדאטאסט (ללא ערכי NULL) -->
           <label><input type="checkbox" value="Action"> Action</label>
           <label><input type="checkbox" value="Adult"> Adult</label>
           <label><input type="checkbox" value="Adventure"> Adventure</label>
@@ -203,7 +285,19 @@
           <label><input type="checkbox" value="War"> War</label>
           <label><input type="checkbox" value="Western"> Western</label>
         </div>
-        <p class="genre-hint">הז'אנר הראשון שתבחר יהיה הז'אנר הראשי</p>
+
+        <!-- מוצג רק כשאין תוצאות בחיפוש -->
+        <div class="genre-no-match" id="genreNoMatch">
+          לא נמצא ז'אנר כזה בדאטה — ניתן להוסיף ידנית:
+          <div class="genre-custom">
+            <input type="text" id="customGenreInput" placeholder="הכנס ז'אנר חופשי">
+            <button type="button" onclick="addCustomGenre()">+ הוסף</button>
+          </div>
+        </div>
+
+        <!-- תגיות ז'אנרים שנבחרו -->
+        <div class="genre-tags" id="genreTags"></div>
+        <p class="genre-hint">הז'אנר הראשון שנבחר יהיה הז'אנר הראשי</p>
       </div>
 
       <div class="form-group">
@@ -255,29 +349,113 @@
   </div>
 
   <script>
+    // רשימת ז'אנרים ידועים מהדאטאסט
+    const KNOWN_GENRES = [
+      "Action","Adult","Adventure","Animation","Biography","Comedy","Crime",
+      "Documentary","Drama","Family","Fantasy","Film-Noir","Game-Show","History",
+      "Horror","Music","Musical","Mystery","News","Reality-TV","Romance","Sci-Fi",
+      "Sport","Talk-Show","Thriller","War","Western"
+    ];
+
+    // ז'אנרים שנבחרו (לפי סדר בחירה)
+    const selectedGenres = [];
+
+    // --- פילטור הרשימה לפי חיפוש ---
+    document.getElementById("genreSearch").addEventListener("input", function() {
+      const query = this.value.toLowerCase().trim();
+      const labels = document.querySelectorAll("#genreGrid label");
+      let visibleCount = 0;
+
+      labels.forEach(label => {
+        const name = label.querySelector("input").value.toLowerCase();
+        const match = name.includes(query);
+        label.style.display = match ? "" : "none";
+        if (match) visibleCount++;
+      });
+
+      // אם אין תוצאות — מציגים אפשרות ז'אנר חופשי
+      const noMatch = document.getElementById("genreNoMatch");
+      const grid = document.getElementById("genreGrid");
+      if (visibleCount === 0 && query.length > 0) {
+        noMatch.style.display = "block";
+        grid.style.borderRadius = "0";
+      } else {
+        noMatch.style.display = "none";
+        grid.style.borderRadius = "0 0 6px 6px";
+      }
+    });
+
+    // --- סימון checkbox מעדכן תגיות ---
+    document.getElementById("genreGrid").addEventListener("change", function(e) {
+      if (e.target.type !== "checkbox") return;
+      const val = e.target.value;
+      if (e.target.checked) {
+        if (!selectedGenres.includes(val)) selectedGenres.push(val);
+      } else {
+        const idx = selectedGenres.indexOf(val);
+        if (idx !== -1) selectedGenres.splice(idx, 1);
+      }
+      renderTags();
+    });
+
+    // --- הוספת ז'אנר חופשי ---
+    function addCustomGenre() {
+      const input = document.getElementById("customGenreInput");
+      const val = input.value.trim();
+      if (!val) return;
+      if (!selectedGenres.includes(val)) {
+        selectedGenres.push(val);
+        renderTags();
+      }
+      input.value = "";
+      document.getElementById("genreSearch").value = "";
+      // מחזירים את כל הרשימה
+      document.querySelectorAll("#genreGrid label").forEach(l => l.style.display = "");
+      document.getElementById("genreNoMatch").style.display = "none";
+    }
+
+    // --- ציור תגיות ---
+    function renderTags() {
+      const container = document.getElementById("genreTags");
+      container.innerHTML = "";
+      selectedGenres.forEach((g, i) => {
+        const tag = document.createElement("span");
+        tag.className = "genre-tag";
+        // ז'אנר ראשון מסומן כ-"ראשי"
+        tag.innerHTML = `${i === 0 ? "⭐ " : ""}${g} <span class="remove" onclick="removeGenre('${g}')">×</span>`;
+        container.appendChild(tag);
+      });
+    }
+
+    // --- הסרת ז'אנר ---
+    function removeGenre(val) {
+      const idx = selectedGenres.indexOf(val);
+      if (idx !== -1) selectedGenres.splice(idx, 1);
+      // מבטלים את הסימון ב-checkbox אם קיים
+      const cb = document.querySelector(`#genreGrid input[value="${val}"]`);
+      if (cb) cb.checked = false;
+      renderTags();
+    }
+
+    // --- שליחת הטופס ---
     document.getElementById("movieForm").addEventListener("submit", async function(e) {
-      e.preventDefault(); // מונע רענון של הדף
+      e.preventDefault();
 
       const resultDiv = document.getElementById("result");
       resultDiv.style.display = "block";
       resultDiv.className = "";
       resultDiv.textContent = "⏳ מחשב...";
 
-      // איסוף ז'אנרים מסומנים — מחברים לstring מופרד בפסיקים
-      const checkedGenres = Array.from(
-        document.querySelectorAll("#genreGrid input[type='checkbox']:checked")
-      ).map(cb => cb.value);
-
-      if (checkedGenres.length === 0) {
+      // בדיקה: לפחות ז'אנר אחד
+      if (selectedGenres.length === 0) {
         resultDiv.className = "result-error";
         resultDiv.textContent = "❌ יש לבחור לפחות ז'אנר אחד";
         return;
       }
 
-      // איסוף נתונים מהטופס
       const data = {
         primaryTitle:    document.getElementById("primaryTitle").value.trim(),
-        genres:          checkedGenres.join(","),
+        genres:          selectedGenres.join(","),
         startYear:       document.getElementById("startYear").value,
         runtimeMinutes:  document.getElementById("runtimeMinutes").value,
         Language:        document.getElementById("Language").value.trim(),
@@ -296,16 +474,13 @@
         const json = await response.json();
 
         if (response.ok) {
-          // הצלחה - מציג את הדירוג
           resultDiv.className = "result-success";
           resultDiv.textContent = `⭐ Predicted Rating: ${json.predicted_rating} / 10`;
         } else {
-          // שגיאה מהשרת
           resultDiv.className = "result-error";
           resultDiv.textContent = `❌ שגיאה: ${json.error}`;
         }
       } catch (err) {
-        // שגיאת רשת
         resultDiv.className = "result-error";
         resultDiv.textContent = "❌ לא ניתן להתחבר לשרת";
       }
