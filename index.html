@@ -344,9 +344,13 @@
       </div>
 
       <div class="form-group">
-        <label for="budget">תקציב ($) <span class="optional">(אופציונלי)</span></label>
-        <input type="number" id="budget" name="budget"
-               placeholder="לדוגמה: 50000000" min="0">
+        <label>תקציב</label>
+        <div style="padding: 10px; border: 1px solid #ccc; border-radius: 6px; background: #fafafa;">
+          <label style="font-weight: normal; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+            <input type="checkbox" id="has_budget" style="width: auto; margin: 0;">
+            התקציב של הסרט ידוע
+          </label>
+        </div>
       </div>
 
       <button type="submit">🔮 Predict Rating</button>
@@ -469,7 +473,7 @@
         Language:        document.getElementById("is_english").checked ? "English" : "Other",
         Country:         document.getElementById("is_us").checked ? "United States" : "Other",
         lead_actors_ids: document.getElementById("lead_actors_ids").value.trim(),
-        budget:          document.getElementById("budget").value || null,
+        budget:          document.getElementById("has_budget").checked ? 1 : null,
       };
 
       try {
