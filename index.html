@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>חיזוי דירוג סרטים</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f2f5;
+      margin: 0;
+      padding: 30px;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 5px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #777;
+      margin-bottom: 25px;
+      font-size: 14px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #444;
+      font-size: 14px;
+    }
+
+    .optional {
+      font-weight: normal;
+      color: #999;
+      font-size: 12px;
+    }
+
+    input[type="text"],
+    input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #4a90d9;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      background-color: #4a90d9;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background-color: #357abd;
+    }
+
+    #result {
+      margin-top: 20px;
+      padding: 16px;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 20px;
+      font-weight: bold;
+      display: none;
+    }
+
+    .result-success {
+      background-color: #e8f5e9;
+      color: #2e7d32;
+      border: 1px solid #a5d6a7;
+    }
+
+    .result-error {
+      background-color: #fdecea;
+      color: #c62828;
+      border: 1px solid #ef9a9a;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid #eee;
+      margin: 20px 0;
+    }
+
+    .section-title {
+      font-size: 13px;
+      color: #999;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎬 חיזוי דירוג סרטים</h1>
+    <p class="subtitle">מלא את פרטי הסרט ולחץ על Predict Rating</p>
+
+    <form id="movieForm">
+
+      <!-- פרטים בסיסיים -->
+      <div class="section-title">פרטים בסיסיים</div>
+
+      <div class="form-group">
+        <label for="primaryTitle">שם הסרט</label>
+        <input type="text" id="primaryTitle" name="primaryTitle"
+               placeholder="לדוגמה: The Dark Knight" required>
+      </div>
+
+      <div class="form-group">
+        <label for="genres">ז'אנרים (מופרדים בפסיק)</label>
+        <input type="text" id="genres" name="genres"
+               placeholder="לדוגמה: Action,Drama" required>
+      </div>
+
+      <div class="form-group">
+        <label for="startYear">שנת יציאה</label>
+        <input type="number" id="startYear" name="startYear"
+               placeholder="לדוגמה: 2024" min="1900" max="2030" required>
+      </div>
+
+      <div class="form-group">
+        <label for="runtimeMinutes">משך הסרט (בדקות)</label>
+        <input type="number" id="runtimeMinutes" name="runtimeMinutes"
+               placeholder="לדוגמה: 120" min="1" max="400" required>
+      </div>
+
+      <hr class="divider">
+
+      <!-- פרטים נוספים -->
+      <div class="section-title">פרטים נוספים</div>
+
+      <div class="form-group">
+        <label for="Language">שפה <span class="optional">(לדוגמה: English, Hebrew)</span></label>
+        <input type="text" id="Language" name="Language"
+               placeholder="לדוגמה: English">
+      </div>
+
+      <div class="form-group">
+        <label for="Country">מדינת ייצור <span class="optional">(לדוגמה: United States)</span></label>
+        <input type="text" id="Country" name="Country"
+               placeholder="לדוגמה: United States">
+      </div>
+
+      <div class="form-group">
+        <label for="lead_actors_ids">שחקנים ראשיים <span class="optional">(רשימה, אופציונלי)</span></label>
+        <input type="text" id="lead_actors_ids" name="lead_actors_ids"
+               placeholder="לדוגמה: ['nm0000138', 'nm0000151']">
+      </div>
+
+      <div class="form-group">
+        <label for="budget">תקציב ($) <span class="optional">(אופציונלי)</span></label>
+        <input type="number" id="budget" name="budget"
+               placeholder="לדוגמה: 50000000" min="0">
+      </div>
+
+      <button type="submit">🔮 Predict Rating</button>
+    </form>
+
+    <!-- אזור הצגת תוצאה -->
+    <div id="result"></div>
+  </div>
+
+  <script>
+    document.getElementById("movieForm").addEventListener("submit", async function(e) {
+      e.preventDefault(); // מונע רענון של הדף
+
+      const resultDiv = document.getElementById("result");
+      resultDiv.style.display = "block";
+      resultDiv.className = "";
+      resultDiv.textContent = "⏳ מחשב...";
+
+      // איסוף נתונים מהטופס
+      const data = {
+        primaryTitle:    document.getElementById("primaryTitle").value.trim(),
+        genres:          document.getElementById("genres").value.trim(),
+        startYear:       document.getElementById("startYear").value,
+        runtimeMinutes:  document.getElementById("runtimeMinutes").value,
+        Language:        document.getElementById("Language").value.trim(),
+        Country:         document.getElementById("Country").value.trim(),
+        lead_actors_ids: document.getElementById("lead_actors_ids").value.trim(),
+        budget:          document.getElementById("budget").value || null,
+      };
+
+      try {
+        const response = await fetch("/predict", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+
+        const json = await response.json();
+
+        if (response.ok) {
+          // הצלחה - מציג את הדירוג
+          resultDiv.className = "result-success";
+          resultDiv.textContent = `⭐ Predicted Rating: ${json.predicted_rating} / 10`;
+        } else {
+          // שגיאה מהשרת
+          resultDiv.className = "result-error";
+          resultDiv.textContent = `❌ שגיאה: ${json.error}`;
+        }
+      } catch (err) {
+        // שגיאת רשת
+        resultDiv.className = "result-error";
+        resultDiv.textContent = "❌ לא ניתן להתחבר לשרת";
+      }
+    });
+  </script>
+</body>
+</html>
