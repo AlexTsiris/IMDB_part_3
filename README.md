@@ -19,21 +19,24 @@
 
 ## התקנה
 
+> **חשוב:** נדרש **Python 3.11** (המודל נשמר עם scikit-learn 1.2.2 שאינו תומך ב-Python 3.12+).  
+> מומלץ להשתמש ב-[Anaconda](https://www.anaconda.com/download) שמכיל Python 3.11.
+
 ```bash
-# 1. יצירת סביבה וירטואלית
+# 1. יצירת סביבה וירטואלית עם Python 3.11
 python -m venv venv
+
+# 2. הפעלת הסביבה הוירטואלית
 venv\Scripts\activate        # Windows
 
-# 2. התקנת ספריות
+# 3. התקנת ספריות
 pip install -r requirements.txt
 ```
-
-> **חשוב:** המודל נשמר עם **scikit-learn 1.2.2** ו-**Python 3.11**.  
-> יש להשתמש באותן גרסאות (Anaconda מכיל אותן).
 
 ## הפעלה
 
 ```bash
+# לאחר הפעלת הסביבה הוירטואלית:
 python api.py
 ```
 
