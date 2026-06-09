@@ -318,15 +318,17 @@
       <div class="section-title">פרטים נוספים</div>
 
       <div class="form-group">
-        <label for="Language">שפה <span class="optional">(לדוגמה: English, Hebrew)</span></label>
-        <input type="text" id="Language" name="Language"
-               placeholder="לדוגמה: English">
-      </div>
-
-      <div class="form-group">
-        <label for="Country">מדינת ייצור <span class="optional">(לדוגמה: United States)</span></label>
-        <input type="text" id="Country" name="Country"
-               placeholder="לדוגמה: United States">
+        <label>שפה ומדינה</label>
+        <div style="display: flex; flex-direction: column; gap: 10px; padding: 10px; border: 1px solid #ccc; border-radius: 6px; background: #fafafa;">
+          <label style="font-weight: normal; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+            <input type="checkbox" id="is_english" style="width: auto; margin: 0;">
+            הסרט בשפה האנגלית
+          </label>
+          <label style="font-weight: normal; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+            <input type="checkbox" id="is_us" style="width: auto; margin: 0;">
+            הסרט מיוצר בארה"ב
+          </label>
+        </div>
       </div>
 
       <div class="form-group">
@@ -458,8 +460,8 @@
         genres:          selectedGenres.join(","),
         startYear:       document.getElementById("startYear").value,
         runtimeMinutes:  document.getElementById("runtimeMinutes").value,
-        Language:        document.getElementById("Language").value.trim(),
-        Country:         document.getElementById("Country").value.trim(),
+        Language:        document.getElementById("is_english").checked ? "English" : "Other",
+        Country:         document.getElementById("is_us").checked ? "United States" : "Other",
         lead_actors_ids: document.getElementById("lead_actors_ids").value.trim(),
         budget:          document.getElementById("budget").value || null,
       };
