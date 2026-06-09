@@ -338,9 +338,9 @@
       </div>
 
       <div class="form-group">
-        <label for="lead_actors_ids">שחקנים ראשיים <span class="optional">(רשימה, אופציונלי)</span></label>
-        <input type="text" id="lead_actors_ids" name="lead_actors_ids"
-               placeholder="לדוגמה: ['nm0000138', 'nm0000151']">
+        <label for="num_actors">כמות שחקנים ראשיים</label>
+        <input type="number" id="num_actors" name="num_actors"
+               placeholder="לדוגמה: 3" min="0" max="20">
       </div>
 
       <div class="form-group">
@@ -361,6 +361,13 @@
   </div>
 
   <script>
+    // בונה רשימת IDs מלאכותית לפי כמות — המודל סופר רק את האורך
+    function buildActorsList(numStr) {
+      const n = parseInt(numStr) || 0;
+      const ids = Array.from({ length: n }, (_, i) => `nm000000${i}`);
+      return JSON.stringify(ids);
+    }
+
     // רשימת ז'אנרים ידועים מהדאטאסט
     const KNOWN_GENRES = [
       "Action","Adult","Adventure","Animation","Biography","Comedy","Crime",
@@ -472,7 +479,7 @@
         runtimeMinutes:  document.getElementById("runtimeMinutes").value,
         Language:        document.getElementById("is_english").checked ? "English" : "Other",
         Country:         document.getElementById("is_us").checked ? "United States" : "Other",
-        lead_actors_ids: document.getElementById("lead_actors_ids").value.trim(),
+        lead_actors_ids: buildActorsList(document.getElementById("num_actors").value),
         budget:          document.getElementById("has_budget").checked ? 1 : null,
       };
 
