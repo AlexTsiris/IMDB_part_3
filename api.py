@@ -40,6 +40,12 @@ def predict():
         except (ValueError, TypeError):
             return jsonify({"error": "startYear ו-runtimeMinutes חייבים להיות מספרים"}), 400
 
+        # בדיקה: טווחים תואמים לנתוני האימון (חלק 1)
+        if not (1900 <= start_year <= 2024):
+            return jsonify({"error": "startYear חייב להיות בין 1900 ל-2024"}), 400
+        if not (60 <= runtime <= 300):
+            return jsonify({"error": "runtimeMinutes חייב להיות בין 60 ל-300 (לפי פילטר נתוני האימון)"}), 400
+
         # בניית שורה אחת עם כל השדות שprepare_data מצפה להם
         row = {
             "genres":         data.get("genres", ""),
